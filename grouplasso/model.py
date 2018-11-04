@@ -10,7 +10,7 @@ from .prox import _prox
 class GroupLassoRegressor(BaseEstimator, RegressorMixin):
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
-                 tol=1e-4, max_iter=1000,
+                 tol=1e-5, max_iter=1000,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
             raise TypeError("group_ids must be numpy.array")
@@ -29,6 +29,12 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         self.verbose_interval = verbose_interval
 
     def fit(self, X, y):
+        if isinstance(X, pd.DataFrame):
+            X = X.values
+
+        if isinstance(y, pd.Series):
+            y = y.values
+
         n_samples = len(X)
         X = add_intercept(X)
         n_features = X.shape[1]
@@ -62,7 +68,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
 class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
-                 tol=1e-4, max_iter=1000,
+                 tol=1e-5, max_iter=1000,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
             raise TypeError("group_ids must be numpy.array")

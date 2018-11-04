@@ -48,7 +48,8 @@ class BasicTestSuite(unittest.TestCase):
             x_train, x_test, n_noised_features)
 
         # set group id
-        group_ids = np.r_[np.zeros(x.shape[1]), np.ones(n_noised_features)].astype(int)
+        group_ids = np.r_[np.zeros(x.shape[1]), np.ones(
+            n_noised_features)].astype(int)
         model = GroupLassoRegressor(group_ids=group_ids,
                                     random_state=42, verbose=False,
                                     alpha=1.0, tol=1e-4, eta=1e-1,
@@ -80,7 +81,8 @@ class BasicTestSuite(unittest.TestCase):
             x_train, x_test, n_noised_features)
 
         # set group id
-        group_ids = np.r_[np.zeros(x.shape[1]), np.ones(n_noised_features)].astype(int)
+        group_ids = np.r_[np.zeros(x.shape[1]), np.ones(
+            n_noised_features)].astype(int)
         model = GroupLassoClassifier(group_ids=group_ids,
                                      random_state=42, verbose=False,
                                      alpha=1.0, tol=1e-4, eta=1e-1,
@@ -120,19 +122,20 @@ class BasicTestSuite(unittest.TestCase):
                                     1., 1., 0., 1., 0.]]))
         y = pd.Series(np.array([0, 1, 1, 1, 0, 0]))
         group_ids = (np.arange(x.shape[1]) // 2).astype(int)
-        model = GridSearchCV(
-            GroupLassoClassifier(group_ids,
-                                 random_state=42,
-                                 tol=1e-4, eta=1e-1, max_iter=10,
-                                 verbose=False),
-            param_grid={
-                'alpha': np.logspace(-3, -1, 3),
-            },
-            cv=3,
-            n_jobs=1,
-            verbose=False
-        )
-        model.fit(x, y)
+        for ModelClass in (GroupLassoRegressor, GroupLassoClassifier):
+            model = GridSearchCV(
+                ModelClass(group_ids,
+                           random_state=42,
+                           tol=1e-4, eta=1e-1, max_iter=10,
+                           verbose=False),
+                param_grid={
+                    'alpha': np.logspace(-3, -1, 3),
+                },
+                cv=3,
+                n_jobs=1,
+                verbose=False
+            )
+            model.fit(x, y)
 
 
 if __name__ == '__main__':
