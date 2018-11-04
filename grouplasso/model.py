@@ -4,28 +4,7 @@ from sklearn.metrics import log_loss, mean_squared_error
 import pandas as pd
 
 from .util import sigmoid, add_intercept
-
-
-def _prox(coef, thresh, group_ids):
-    """
-    Proximal operator.
-    Group sparsity case: apply group sparsity operator
-    """
-    df = pd.DataFrame({
-        "group_id": group_ids,
-        "coef": coef
-    })
-    lst = []
-    for group_id, v in df.groupby("group_id"):
-        group_norm = np.linalg.norm(v['coef'], 2)
-        multiplier = max(0, 1 - thresh / group_norm)
-        lst.append([group_id, multiplier])
-
-    group_norms = pd.DataFrame(lst).rename(
-        columns={0: "group_id", 1: "multiplier"}
-    )
-    out = df.merge(group_norms, how='left')
-    return (out['multiplier'] * out['coef']).values
+from .prox import _prox
 
 
 class GroupLassoRegressor(BaseEstimator, RegressorMixin):
@@ -33,6 +12,12 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
                  alpha=1e-3, eta=1e-1,
                  tol=1e-4, max_iter=1000,
                  verbose=True, verbose_interval=1):
+        if not isinstance(group_ids, np.ndarray):
+            raise TypeError("group_ids must be numpy.array")
+
+        if group_ids.dtype != np.int:
+            raise TypeError("each group_id must be int.")
+
         self.group_ids = group_ids
         self.random_state = random_state
         self._rng = np.random.RandomState(random_state)
@@ -79,6 +64,12 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
                  alpha=1e-3, eta=1e-1,
                  tol=1e-4, max_iter=1000,
                  verbose=True, verbose_interval=1):
+        if not isinstance(group_ids, np.ndarray):
+            raise TypeError("group_ids must be numpy.array")
+
+        if group_ids.dtype != np.int:
+            raise TypeError("each group_id must be int.")
+
         self.group_ids = group_ids
         self.random_state = random_state
         self._rng = np.random.RandomState(random_state)

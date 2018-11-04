@@ -33,7 +33,7 @@ class BasicTestSuite(unittest.TestCase):
     """Basic test cases."""
 
     def test_basic(self):
-        model = GroupLassoRegressor([0, 1], random_state=42)
+        model = GroupLassoRegressor(np.array([0, 1]), random_state=42)
         model.get_params()
 
     def test_regressor(self):
@@ -48,12 +48,12 @@ class BasicTestSuite(unittest.TestCase):
             x_train, x_test, n_noised_features)
 
         # set group id
-        group_ids = np.r_[np.zeros(x.shape[1]), np.ones(n_noised_features)]
-        start = time.time()
+        group_ids = np.r_[np.zeros(x.shape[1]), np.ones(n_noised_features)].astype(int)
         model = GroupLassoRegressor(group_ids=group_ids,
                                     random_state=42, verbose=False,
                                     alpha=1.0, tol=1e-4, eta=1e-1,
                                     max_iter=100)
+        start = time.time()
         model.fit(x_train, y_train)
         print('elapsed time:', time.time() - start)
         print('itr:', model.n_iter_)
@@ -80,12 +80,12 @@ class BasicTestSuite(unittest.TestCase):
             x_train, x_test, n_noised_features)
 
         # set group id
-        group_ids = np.r_[np.zeros(x.shape[1]), np.ones(n_noised_features)]
-        start = time.time()
+        group_ids = np.r_[np.zeros(x.shape[1]), np.ones(n_noised_features)].astype(int)
         model = GroupLassoClassifier(group_ids=group_ids,
                                      random_state=42, verbose=False,
                                      alpha=1.0, tol=1e-4, eta=1e-1,
                                      max_iter=100)
+        start = time.time()
         model.fit(x_train, y_train)
         print('elapsed time:', time.time() - start)
         print('itr:', model.n_iter_)
@@ -119,7 +119,7 @@ class BasicTestSuite(unittest.TestCase):
                                    [0.34656949, 0., 0., 0.0165095, 0.,
                                     1., 1., 0., 1., 0.]]))
         y = pd.Series(np.array([0, 1, 1, 1, 0, 0]))
-        group_ids = (np.arange(x.shape[1]) // 2).tolist()
+        group_ids = (np.arange(x.shape[1]) // 2).astype(int)
         model = GridSearchCV(
             GroupLassoClassifier(group_ids,
                                  random_state=42,

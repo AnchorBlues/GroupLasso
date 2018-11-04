@@ -18,7 +18,7 @@ setup(
     long_description=readme,
     author='Yu Umegaki',
     author_email='yu.umegaki@gmail.com',
-    install_requires=['pandas', 'numpy', 'sklearn'],
+    install_requires=['pandas', 'numpy', 'sklearn', 'numba'],
     url='https://github.com/AnchorBlues/GroupLasso',
     license=license,
     packages=find_packages(exclude=('tests', 'docs')), 
