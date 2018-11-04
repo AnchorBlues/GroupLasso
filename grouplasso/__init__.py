@@ -3,6 +3,6 @@ from .util import sigmoid, add_intercept
 
 
 __all__ = [
-    "GroupLassoRegressor"
+    "GroupLassoRegressor",
     "GroupLassoClassifier"
 ]
