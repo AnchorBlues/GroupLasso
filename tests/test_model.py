@@ -194,6 +194,22 @@ class BasicTestSuite(unittest.TestCase):
             model.fit(x, y)
         warnings.filterwarnings("always")
 
+    def test_converge_warning(self):
+        """
+        check raise warning if not converged.
+        """
+        data = load_breast_cancer()
+        x = StandardScaler().fit_transform(data.data)
+        y = data.target
+        group_ids = np.arange(x.shape[1]) // 2
+        for ModelClass in (GroupLassoRegressor, GroupLassoClassifier):
+            model = ModelClass(group_ids=group_ids,
+                               random_state=RANDOM_STATE, verbose=False,
+                               alpha=1e-1, tol=1e-3, eta=1e-0,
+                               max_iter=10)
+            with self.assertWarns(UserWarning):
+                model.fit(x, y)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -41,7 +41,8 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         n_features = X.shape[1]
         w = self._rng.randn(n_features)
         thresh = self.eta * self.alpha
-        for itr in range(self.max_iter):
+        itr = 0
+        while itr < self.max_iter:
             w_old = w.copy()
             pred = X @ w
             if self.verbose and itr % self.verbose_interval == 0:
@@ -60,7 +61,9 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
                     print("Converged. itr={}".format(itr))
                 break
 
-        if itr >= self.max_iter - 1:
+            itr += 1
+
+        if itr >= self.max_iter:
             warnings.warn("Failed to converge. Increase the "
                           "number of iterations.")
         self.coef_ = w[:-1]
@@ -107,7 +110,8 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         n_features = X.shape[1]
         w = self._rng.randn(n_features)
         thresh = self.eta * self.alpha
-        for itr in range(self.max_iter):
+        itr = 0
+        while itr < self.max_iter:
             w_old = w.copy()
             proba = sigmoid(X @ w)
             if self.verbose and itr % self.verbose_interval == 0:
@@ -126,7 +130,9 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
                     print("Converged. itr={}".format(itr))
                 break
 
-        if itr >= self.max_iter - 1:
+            itr += 1
+
+        if itr >= self.max_iter:
             warnings.warn("Failed to converge. Increase the "
                           "number of iterations.")
         self.coef_ = w[:-1]
