@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 from sklearn.metrics import log_loss, mean_squared_error
@@ -10,7 +11,7 @@ from .prox import _prox
 class GroupLassoRegressor(BaseEstimator, RegressorMixin):
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
-                 tol=1e-5, max_iter=1000,
+                 tol=1e-3, max_iter=1000,
                  reg_intercept=False,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
@@ -64,11 +65,14 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
                 w[:-1] = _prox(out[:-1], thresh, _group_ids)
                 w[-1] = out[-1]
 
-            if np.linalg.norm(w_old - w, 2) ** 2 < self.tol:
+            if np.linalg.norm(w_old - w, 2) / self.eta < self.tol:
                 if self.verbose:
                     print("Converged. itr={}".format(itr))
                 break
 
+        if itr >= self.max_iter - 1:
+            warnings.warn("Failed to converge. Increase the "
+                          "number of iterations.")
         self.coef_ = w[:-1]
         self.intercept_ = w[-1]
         self.n_iter_ = itr
@@ -80,7 +84,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
 class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
-                 tol=1e-5, max_iter=1000,
+                 tol=1e-3, max_iter=1000,
                  reg_intercept=False,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
@@ -137,11 +141,14 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
                 w[:-1] = _prox(out[:-1], thresh, _group_ids)
                 w[-1] = out[-1]
 
-            if np.linalg.norm(w_old - w, 2) ** 2 < self.tol:
+            if np.linalg.norm(w_old - w, 2) / self.eta < self.tol:
                 if self.verbose:
                     print("Converged. itr={}".format(itr))
                 break
 
+        if itr >= self.max_iter - 1:
+            warnings.warn("Failed to converge. Increase the "
+                          "number of iterations.")
         self.coef_ = w[:-1]
         self.intercept_ = w[-1]
         self.n_iter_ = itr
