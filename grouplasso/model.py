@@ -12,7 +12,6 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
                  tol=1e-3, max_iter=1000,
-                 reg_intercept=False,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
             raise TypeError("group_ids must be numpy.array")
@@ -27,7 +26,6 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         self.eta = eta
         self.tol = tol
         self.max_iter = max_iter
-        self.reg_intercept = reg_intercept
         self.verbose = verbose
         self.verbose_interval = verbose_interval
 
@@ -38,12 +36,6 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         if isinstance(y, pd.Series):
             y = y.values
 
-        if self.reg_intercept:
-            _group_ids = np.array(
-                self.group_ids.tolist() + [self.group_ids.max() + 1])
-        else:
-            _group_ids = self.group_ids
-
         n_samples = len(X)
         X = add_intercept(X)
         n_features = X.shape[1]
@@ -53,21 +45,15 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
             w_old = w.copy()
             pred = X @ w
             if self.verbose and itr % self.verbose_interval == 0:
-                if self.reg_intercept:
-                    penalty = self.alpha * np.abs(w).sum()
-                else:
-                    penalty = self.alpha * np.abs(w[:-1]).sum()
+                penalty = self.alpha * np.abs(w[:-1]).sum()
                 loss = mean_squared_error(y, pred) + penalty
                 print("training loss:", loss)
 
             diff = 1 / n_samples * X.T @ (pred - y)
             out = w - self.eta * diff
 
-            if self.reg_intercept:
-                w = _prox(out, thresh, _group_ids)
-            else:
-                w[:-1] = _prox(out[:-1], thresh, _group_ids)
-                w[-1] = out[-1]
+            w[:-1] = _prox(out[:-1], thresh, self.group_ids)
+            w[-1] = out[-1]
 
             if np.linalg.norm(w_old - w, 2) / self.eta < self.tol:
                 if self.verbose:
@@ -89,7 +75,6 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
                  tol=1e-3, max_iter=1000,
-                 reg_intercept=False,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
             raise TypeError("group_ids must be numpy.array")
@@ -104,7 +89,6 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         self.eta = eta
         self.tol = tol
         self.max_iter = max_iter
-        self.reg_intercept = reg_intercept
         self.verbose = verbose
         self.verbose_interval = verbose_interval
 
@@ -118,12 +102,6 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         # binary classification
         assert ((y == 0) | (y == 1)).all()
 
-        if self.reg_intercept:
-            _group_ids = np.array(
-                self.group_ids.tolist() + [self.group_ids.max() + 1])
-        else:
-            _group_ids = self.group_ids
-
         n_samples = len(X)
         X = add_intercept(X)
         n_features = X.shape[1]
@@ -133,21 +111,15 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
             w_old = w.copy()
             proba = sigmoid(X @ w)
             if self.verbose and itr % self.verbose_interval == 0:
-                if self.reg_intercept:
-                    penalty = self.alpha * np.abs(w).sum()
-                else:
-                    penalty = self.alpha * np.abs(w[:-1]).sum()
+                penalty = self.alpha * np.abs(w[:-1]).sum()
                 loss = log_loss(y, proba) + penalty
                 print("training loss:", loss)
 
             diff = 1 / n_samples * X.T @ (proba - y)
             out = w - self.eta * diff
 
-            if self.reg_intercept:
-                w = _prox(out, thresh, _group_ids)
-            else:
-                w[:-1] = _prox(out[:-1], thresh, _group_ids)
-                w[-1] = out[-1]
+            w[:-1] = _prox(out[:-1], thresh, self.group_ids)
+            w[-1] = out[-1]
 
             if np.linalg.norm(w_old - w, 2) / self.eta < self.tol:
                 if self.verbose:
