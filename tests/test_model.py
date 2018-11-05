@@ -7,6 +7,7 @@ from sklearn.datasets import load_breast_cancer, load_boston
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score
+from sklearn.linear_model import Lasso, LogisticRegression
 import pandas as pd
 from .context import grouplasso
 from grouplasso.model import GroupLassoRegressor, GroupLassoClassifier
@@ -69,6 +70,30 @@ class BasicTestSuite(unittest.TestCase):
         score = model.score(x_test, y_test)
         assert score >= 0.65
 
+    def test_vs_sklearn_Lasso(self):
+        """
+        compare with lasso of sklearn.
+        group lasso become normal lasso if every feature is differenet group with each other.
+        """
+        data = load_boston()
+        x = StandardScaler().fit_transform(data.data)
+        y = data.target
+        group_ids = np.arange(x.shape[1]).astype(int)
+        alpha = 1.0
+        group_lasso = GroupLassoRegressor(group_ids=group_ids,
+                                          random_state=42, verbose=False,
+                                          alpha=alpha, tol=1e-5, eta=1e-1,
+                                          reg_intercept=False,
+                                          max_iter=1000)
+        group_lasso.fit(x, y)
+        sklearn_lasso = Lasso(random_state=42, alpha=alpha)
+        sklearn_lasso.fit(x, y)
+        diff_of_coef = np.abs(group_lasso.coef_ - sklearn_lasso.coef_)
+        diff_of_intercept = abs(
+            group_lasso.intercept_ - sklearn_lasso.intercept_)
+        assert (diff_of_coef < 1e-1).all()
+        assert diff_of_intercept < 1e-1
+
     def test_classifier(self):
         data = load_breast_cancer()
         x = data.data
@@ -106,6 +131,33 @@ class BasicTestSuite(unittest.TestCase):
         assert ((proba >= 0) & (proba <= 1)).all()
         acc = accuracy_score(y_test, pred)
         assert acc >= 0.9
+
+    def test_vs_sklearn_LogisticRegression(self):
+        """
+        compare with lasso(L1 logistic regression) of sklearn.
+        group lasso become normal lasso if every feature is differenet group with each other.
+        """
+        data = load_breast_cancer()
+        x = StandardScaler().fit_transform(data.data)
+        y = data.target
+        group_ids = np.arange(x.shape[1]).astype(int)
+        alpha = 1e-1
+        n_samples = len(x)
+        C = 1 / (n_samples * alpha)
+        group_lasso = GroupLassoClassifier(group_ids=group_ids,
+                                           random_state=42, verbose=False,
+                                           alpha=alpha, tol=1e-5, eta=1e-0,
+                                           reg_intercept=False,
+                                           max_iter=1000)
+        group_lasso.fit(x, y)
+        sklearn_lasso = LogisticRegression(random_state=42, C=C, max_iter=1000,
+                                           penalty='l1', solver='saga')
+        sklearn_lasso.fit(x, y)
+        diff_of_coef = np.abs(group_lasso.coef_ - sklearn_lasso.coef_[0])
+        diff_of_intercept = abs(
+            group_lasso.intercept_ - sklearn_lasso.intercept_[0])
+        assert (diff_of_coef < 5e-1).all()
+        assert diff_of_intercept < 5e-1
 
     def test_GridSearch(self):
         x = pd.DataFrame(np.array([[0.27117366, 0.125, 0., 0.01415106, 0.,
