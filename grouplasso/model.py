@@ -53,7 +53,11 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
             w_old = w.copy()
             pred = X @ w
             if self.verbose and itr % self.verbose_interval == 0:
-                loss = mean_squared_error(y, pred)
+                if self.reg_intercept:
+                    penalty = self.alpha * np.abs(w).sum()
+                else:
+                    penalty = self.alpha * np.abs(w[:-1]).sum()
+                loss = mean_squared_error(y, pred) + penalty
                 print("training loss:", loss)
 
             diff = 1 / n_samples * X.T @ (pred - y)
@@ -129,7 +133,11 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
             w_old = w.copy()
             proba = sigmoid(X @ w)
             if self.verbose and itr % self.verbose_interval == 0:
-                loss = log_loss(y, proba)
+                if self.reg_intercept:
+                    penalty = self.alpha * np.abs(w).sum()
+                else:
+                    penalty = self.alpha * np.abs(w[:-1]).sum()
+                loss = log_loss(y, proba) + penalty
                 print("training loss:", loss)
 
             diff = 1 / n_samples * X.T @ (proba - y)
