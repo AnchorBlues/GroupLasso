@@ -5,7 +5,7 @@ from sklearn.metrics import log_loss, mean_squared_error
 import pandas as pd
 
 from .util import sigmoid, add_intercept
-from .prox import _prox
+from ._numba import _prox, _group_lasso_penalty
 
 
 class GroupLassoRegressor(BaseEstimator, RegressorMixin):
@@ -46,7 +46,8 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
             w_old = w.copy()
             pred = X @ w
             if self.verbose and itr % self.verbose_interval == 0:
-                penalty = self.alpha * np.abs(w[:-1]).sum()
+                penalty = _group_lasso_penalty(
+                    self.alpha, w[:-1], self.group_ids)
                 loss = mean_squared_error(y, pred) + penalty
                 print("training loss:", loss)
 
@@ -115,7 +116,8 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
             w_old = w.copy()
             proba = sigmoid(X @ w)
             if self.verbose and itr % self.verbose_interval == 0:
-                penalty = self.alpha * np.abs(w[:-1]).sum()
+                penalty = _group_lasso_penalty(
+                    self.alpha, w[:-1], self.group_ids)
                 loss = log_loss(y, proba) + penalty
                 print("training loss:", loss)
 

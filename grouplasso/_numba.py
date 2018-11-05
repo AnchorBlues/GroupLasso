@@ -18,3 +18,13 @@ def _prox(coef, thresh, group_ids):
         result[target_idx] = multiplier * target_coef
 
     return result
+
+
+@jit(f8(f8, f8[:], i1[:]))
+def _group_lasso_penalty(alpha, coef, group_ids):
+    penalty = 0.0
+    unique_group_ids = np.unique(group_ids)
+    for group_id in unique_group_ids:
+        penalty += np.linalg.norm(coef[group_ids == group_id], 2)
+
+    return penalty * alpha
