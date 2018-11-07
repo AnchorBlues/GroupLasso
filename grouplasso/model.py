@@ -27,6 +27,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         self.max_iter = max_iter
         self.verbose = verbose
         self.verbose_interval = verbose_interval
+        self._losses = []
 
     def fit(self, X, y):
         if isinstance(X, pd.DataFrame):
@@ -34,6 +35,8 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
 
         if isinstance(y, pd.Series):
             y = y.values
+
+        self._losses.clear()
 
         n_samples = len(X)
         X = add_intercept(X)
@@ -48,6 +51,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
                 penalty = _group_lasso_penalty(
                     self.alpha, w[:-1], self.group_ids)
                 loss = mean_squared_error(y, pred) + penalty
+                self._losses.append(loss)
                 print("training loss:", loss)
 
             diff = 1 / n_samples * X.T @ (pred - y)
@@ -94,6 +98,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         self.max_iter = max_iter
         self.verbose = verbose
         self.verbose_interval = verbose_interval
+        self._losses = []
 
     def fit(self, X, y):
         if isinstance(X, pd.DataFrame):
@@ -101,6 +106,8 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
 
         if isinstance(y, pd.Series):
             y = y.values
+
+        self._losses.clear()
 
         # binary classification
         assert ((y == 0) | (y == 1)).all()
@@ -118,6 +125,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
                 penalty = _group_lasso_penalty(
                     self.alpha, w[:-1], self.group_ids)
                 loss = binary_log_loss(y, proba) + penalty
+                self._losses.append(loss)
                 print("training loss:", loss)
 
             diff = 1 / n_samples * X.T @ (proba - y)

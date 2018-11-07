@@ -55,13 +55,19 @@ class BasicTestSuite(unittest.TestCase):
         group_ids = np.r_[np.zeros(x.shape[1]), np.ones(
             n_noised_features)].astype(int)
         model = GroupLassoRegressor(group_ids=group_ids,
-                                    random_state=RANDOM_STATE, verbose=False,
+                                    random_state=RANDOM_STATE, verbose=True,
+                                    verbose_interval=10,
                                     alpha=1.0, tol=1e-3, eta=1e-1,
                                     max_iter=1000)
         start = time.time()
         model.fit(x_train, y_train)
         print('elapsed time:', time.time() - start)
         print('itr:', model.n_iter_)
+
+        # check that the loss value is getting smaller
+        assert len(model._losses) >= model.n_iter_ // model.verbose_interval
+        for i in range(1, len(model._losses)):
+            assert model._losses[i] < model._losses[i - 1]
 
         # check that coef of noised feature to be zero
         assert (model.coef_[-n_noised_features:] == 0).all()
@@ -112,13 +118,19 @@ class BasicTestSuite(unittest.TestCase):
         group_ids = np.r_[np.zeros(x.shape[1]), np.ones(
             n_noised_features)].astype(int)
         model = GroupLassoClassifier(group_ids=group_ids,
-                                     random_state=RANDOM_STATE, verbose=False,
+                                     random_state=RANDOM_STATE, verbose=True,
+                                     verbose_interval=10,
                                      alpha=1e-1, tol=1e-3, eta=1e-0,
                                      max_iter=1000)
         start = time.time()
         model.fit(x_train, y_train)
         print('elapsed time:', time.time() - start)
         print('itr:', model.n_iter_)
+
+        # check that the loss value is getting smaller
+        assert len(model._losses) >= model.n_iter_ // model.verbose_interval
+        for i in range(1, len(model._losses)):
+            assert model._losses[i] < model._losses[i - 1]
 
         # check that coef of noised feature to be zero
         assert (model.coef_[-n_noised_features:] == 0).all()
