@@ -1,10 +1,9 @@
 import warnings
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
-from sklearn.metrics import log_loss, mean_squared_error
 import pandas as pd
 
-from .util import sigmoid, add_intercept
+from .util import sigmoid, add_intercept, binary_log_loss, mean_squared_error
 from ._numba import _prox, _group_lasso_penalty
 
 
@@ -118,7 +117,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
             if self.verbose and itr % self.verbose_interval == 0:
                 penalty = _group_lasso_penalty(
                     self.alpha, w[:-1], self.group_ids)
-                loss = log_loss(y, proba) + penalty
+                loss = binary_log_loss(y, proba) + penalty
                 print("training loss:", loss)
 
             diff = 1 / n_samples * X.T @ (proba - y)

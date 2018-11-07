@@ -10,3 +10,15 @@ def add_intercept(X):
     Xにintercept項を付け加える
     """
     return np.c_[X, np.ones(len(X))]
+
+
+def binary_log_loss(y_true, y_pred, eps=1e-15):
+    """
+    binary cross entropy loss
+    """
+    return -np.mean(y_true * np.log(y_pred + eps) +
+                    (1 - y_true) * np.log(1 - y_pred + eps))
+
+
+def mean_squared_error(y_true, y_pred):
+    return np.mean((y_true - y_pred)**2)
