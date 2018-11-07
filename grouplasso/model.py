@@ -13,10 +13,10 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
                  tol=1e-3, max_iter=1000,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
-            raise TypeError("group_ids must be numpy.array")
+            raise TypeError("group_ids must be numpy.array.")
 
         if group_ids.dtype != np.int:
-            raise TypeError("each group_id must be int.")
+            raise TypeError("type of group_id must be int.")
 
         self.group_ids = group_ids
         self.random_state = random_state
@@ -38,18 +38,19 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
 
         self._losses.clear()
 
+        alpha = float(self.alpha)
+        group_ids = self.group_ids.astype(np.int16)
         n_samples = len(X)
         X = add_intercept(X)
         n_features = X.shape[1]
         w = self._rng.randn(n_features)
-        thresh = self.eta * self.alpha
+        thresh = self.eta * alpha
         itr = 0
         while itr < self.max_iter:
             w_old = w.copy()
             pred = X @ w
             if self.verbose and itr % self.verbose_interval == 0:
-                penalty = _group_lasso_penalty(
-                    self.alpha, w[:-1], self.group_ids)
+                penalty = _group_lasso_penalty(alpha, w[:-1], group_ids)
                 loss = mean_squared_error(y, pred) + penalty
                 self._losses.append(loss)
                 print("training loss:", loss)
@@ -57,7 +58,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
             diff = 1 / n_samples * X.T @ (pred - y)
             out = w - self.eta * diff
 
-            w[:-1] = _prox(out[:-1], thresh, self.group_ids)
+            w[:-1] = _prox(out[:-1], thresh, group_ids)
             w[-1] = out[-1]
 
             if np.linalg.norm(w_old - w, 2) / self.eta < self.tol:
@@ -84,10 +85,10 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
                  tol=1e-3, max_iter=1000,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
-            raise TypeError("group_ids must be numpy.array")
+            raise TypeError("group_ids must be numpy.array.")
 
         if group_ids.dtype != np.int:
-            raise TypeError("each group_id must be int.")
+            raise TypeError("type of group_id must be int.")
 
         self.group_ids = group_ids
         self.random_state = random_state
@@ -112,18 +113,19 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         # binary classification
         assert ((y == 0) | (y == 1)).all()
 
+        alpha = float(self.alpha)
+        group_ids = self.group_ids.astype(np.int16)
         n_samples = len(X)
         X = add_intercept(X)
         n_features = X.shape[1]
         w = self._rng.randn(n_features)
-        thresh = self.eta * self.alpha
+        thresh = self.eta * alpha
         itr = 0
         while itr < self.max_iter:
             w_old = w.copy()
             proba = sigmoid(X @ w)
             if self.verbose and itr % self.verbose_interval == 0:
-                penalty = _group_lasso_penalty(
-                    self.alpha, w[:-1], self.group_ids)
+                penalty = _group_lasso_penalty(alpha, w[:-1], group_ids)
                 loss = binary_log_loss(y, proba) + penalty
                 self._losses.append(loss)
                 print("training loss:", loss)
@@ -131,7 +133,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
             diff = 1 / n_samples * X.T @ (proba - y)
             out = w - self.eta * diff
 
-            w[:-1] = _prox(out[:-1], thresh, self.group_ids)
+            w[:-1] = _prox(out[:-1], thresh, group_ids)
             w[-1] = out[-1]
 
             if np.linalg.norm(w_old - w, 2) / self.eta < self.tol:

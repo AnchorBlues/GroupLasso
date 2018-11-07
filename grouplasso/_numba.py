@@ -1,8 +1,8 @@
-from numba import jit, f8, i1
+from numba import jit, f8, i2
 import numpy as np
 
 
-@jit(f8[:](f8[:], f8, i1[:]))
+@jit(f8[:](f8[:], f8, i2[:]))
 def _prox(coef, thresh, group_ids):
     """
     Proximal operator.
@@ -20,7 +20,7 @@ def _prox(coef, thresh, group_ids):
     return result
 
 
-@jit(f8(f8, f8[:], i1[:]))
+@jit(f8(f8, f8[:], i2[:]))
 def _group_lasso_penalty(alpha, coef, group_ids):
     penalty = 0.0
     unique_group_ids = np.unique(group_ids)

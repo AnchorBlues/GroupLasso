@@ -17,7 +17,7 @@ class BasicTestSuite(unittest.TestCase):
         alpha = 1e-2
         eta = 1e-1
         thresh = eta * alpha
-        group_ids = (np.arange(10) // 2).astype(int)
+        group_ids = (np.arange(10) // 2).astype(np.int16)
 
         # create dataset
         x = np.array([[0.27117366, 0.125, 0., 0.01415106, 0.,
