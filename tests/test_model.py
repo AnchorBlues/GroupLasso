@@ -79,6 +79,18 @@ class BasicTestSuite(unittest.TestCase):
         score = model.score(x_test, y_test)
         assert score >= 0.65
 
+        # initialize weights
+        model_weights = np.r_[model.coef_, model.intercept_]
+        # add tiny noise to correct weights
+        model_weights += np.random.randn(len(model_weights)) * 0.3
+        model2 = GroupLassoRegressor(group_ids=group_ids,
+                                     random_state=RANDOM_STATE)
+        model2.set_params(**model.get_params())
+        model2.set_params(initial_weights=model_weights)
+        model2.fit(x_train, y_train)
+        assert model2.n_iter_ < model.n_iter_
+        assert np.linalg.norm(model2.coef_ - model.coef_, 2) < 5e-2
+
     def test_regressor_vs_sklearn_Lasso(self):
         """
         compare with lasso of sklearn.
@@ -146,6 +158,18 @@ class BasicTestSuite(unittest.TestCase):
         assert ((proba >= 0) & (proba <= 1)).all()
         acc = accuracy_score(y_test, pred)
         assert acc >= 0.9
+
+        # initialize weights
+        model_weights = np.r_[model.coef_, model.intercept_]
+        # add tiny noise to correct weights
+        model_weights += np.random.randn(len(model_weights)) * 0.3
+        model2 = GroupLassoClassifier(group_ids=group_ids,
+                                      random_state=RANDOM_STATE)
+        model2.set_params(**model.get_params())
+        model2.set_params(initial_weights=model_weights)
+        model2.fit(x_train, y_train)
+        assert model2.n_iter_ < model.n_iter_
+        assert np.linalg.norm(model2.coef_ - model.coef_, 2) < 5e-2
 
     def test_classifier_vs_sklearn_LogisticRegression(self):
         """

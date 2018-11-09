@@ -11,6 +11,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
                  tol=1e-3, max_iter=1000,
+                 initial_weights=None,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
             raise TypeError("group_ids must be numpy.array.")
@@ -25,6 +26,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         self.eta = eta
         self.tol = tol
         self.max_iter = max_iter
+        self.initial_weights = initial_weights
         self.verbose = verbose
         self.verbose_interval = verbose_interval
         self._losses = []
@@ -43,7 +45,12 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         n_samples = len(X)
         X = add_intercept(X)
         n_features = X.shape[1]
-        w = self._rng.randn(n_features)
+        if self.initial_weights is not None:
+            if self.initial_weights.shape != (n_features, ):
+                raise ValueError("initial_weights must have shape (n_features, ).")
+            w = self.initial_weights.copy()
+        else:
+            w = self._rng.randn(n_features)
         thresh = self.eta * alpha
         itr = 0
         while itr < self.max_iter:
@@ -83,6 +90,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
                  tol=1e-3, max_iter=1000,
+                 initial_weights=None,
                  verbose=True, verbose_interval=1):
         if not isinstance(group_ids, np.ndarray):
             raise TypeError("group_ids must be numpy.array.")
@@ -97,6 +105,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         self.eta = eta
         self.tol = tol
         self.max_iter = max_iter
+        self.initial_weights = initial_weights
         self.verbose = verbose
         self.verbose_interval = verbose_interval
         self._losses = []
@@ -118,7 +127,12 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         n_samples = len(X)
         X = add_intercept(X)
         n_features = X.shape[1]
-        w = self._rng.randn(n_features)
+        if self.initial_weights is not None:
+            if self.initial_weights.shape != (n_features, ):
+                raise ValueError("initial_weights must have shape (n_features, ).")
+            w = self.initial_weights.copy()
+        else:
+            w = self._rng.randn(n_features)
         thresh = self.eta * alpha
         itr = 0
         while itr < self.max_iter:
