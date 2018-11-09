@@ -62,6 +62,12 @@ class BasicTestSuite(unittest.TestCase):
             loss = loss2
             penalty = penalty2
 
+    def test_devidebyzero(self):
+        w = np.zeros(10).astype(np.float64)
+        group_ids = (np.arange(10) // 2).astype(np.int16)
+        thresh = 1.0
+        result = _prox(w, thresh, group_ids)
+        assert (result == 0).all()
 
 if __name__ == '__main__':
     unittest.main()
