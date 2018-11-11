@@ -8,6 +8,61 @@ from ._numba import _prox, _group_lasso_penalty
 
 
 class GroupLassoRegressor(BaseEstimator, RegressorMixin):
+    """Linear Regression Model trained with the norm of grouped coefficients as regularizer (aka the GroupLasso)
+
+    Parameters
+    ----------
+    group_ids : numpy array of int, shape (n_features,)
+        Array of group identities for each parameter.
+        Each entry of the array should contain an int that specify
+        group membership for each parameter.
+
+    random_state : int, RandomState instance or None, default: None
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used by `np.random`.
+
+    alpha : float, default: 1e-3
+        Constant that multiplies the regularization term.
+
+    eta : float, default: 1e-1
+        The learning rate.
+
+    tol : float, default: 1e-3
+        The tolerance for the optimization.
+
+    max_iter : int, default: 1000
+        The maximum number of iterations taken for the solvers to converge.
+
+    initial_weights : None | numpy array, shape (n_features,), default: None
+        The values of initial coefficients.
+        if None, the values are initialized by the numpy.random.randn function.
+
+    verbose : bool, default: True
+        When set to True, the value of objective function is output in the interval
+        that is set with the parameter ``verbose_interval``.
+
+    verbose_interval : int, default: 1
+        if ``verbose == True`` and the number of iteration can be divided by
+        the ``verbose_interval``, the value of objective function is output.
+
+    Attributes
+    ----------
+    coef_ : array, shape (n_features,)
+        parameter vector (w in the cost function formula)
+
+    intercept_ : float
+        independent term in decision function.
+
+    n_iter_ : int
+        number of iterations run by the solver to reach the specified tolerance.
+
+    Notes
+    -----
+    The algorithm used to fit the model is proximal gradient method.
+
+    """
+
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
                  tol=1e-3, max_iter=1000,
@@ -47,7 +102,8 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         n_features = X.shape[1]
         if self.initial_weights is not None:
             if self.initial_weights.shape != (n_features, ):
-                raise ValueError("initial_weights must have shape (n_features, ).")
+                raise ValueError(
+                    "initial_weights must have shape (n_features, ).")
             w = self.initial_weights.copy()
         else:
             w = self._rng.randn(n_features)
@@ -87,6 +143,64 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
 
 
 class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
+    """Logistic Regression Model trained with the norm of grouped coefficients as regularizer (aka the GroupLasso)
+
+    Warnings
+    ---------
+    This class only solves binary classification problems.
+
+    Parameters
+    ----------
+    group_ids : numpy array of int, shape (n_features,)
+        Array of group identities for each parameter.
+        Each entry of the array should contain an int that specify
+        group membership for each parameter.
+
+    random_state : int, RandomState instance or None, default: None
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used by `np.random`.
+
+    alpha : float, default: 1e-3
+        Constant that multiplies the regularization term.
+
+    eta : float, default: 1e-1
+        The learning rate.
+
+    tol : float, default: 1e-3
+        The tolerance for the optimization.
+
+    max_iter : int, default: 1000
+        The maximum number of iterations taken for the solvers to converge.
+
+    initial_weights : None | numpy array, shape (n_features,), default: None
+        The values of initial coefficients.
+        if None, the values are initialized by the numpy.random.randn function.
+
+    verbose : bool, default: True
+        When set to True, the value of objective function is output in the interval
+        that is set with the parameter ``verbose_interval``.
+
+    verbose_interval : int, default: 1
+        if ``verbose == True`` and the number of iteration can be divided by
+        the ``verbose_interval``, the value of objective function is output.
+
+    Attributes
+    ----------
+    coef_ : array, shape (n_features,)
+        parameter vector (w in the cost function formula)
+
+    intercept_ : float
+        independent term in decision function.
+
+    n_iter_ : int
+        number of iterations run by the solver to reach the specified tolerance.
+
+    Notes
+    -----
+    The algorithm used to fit the model is proximal gradient method.
+
+    """
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
                  tol=1e-3, max_iter=1000,
@@ -129,7 +243,8 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         n_features = X.shape[1]
         if self.initial_weights is not None:
             if self.initial_weights.shape != (n_features, ):
-                raise ValueError("initial_weights must have shape (n_features, ).")
+                raise ValueError(
+                    "initial_weights must have shape (n_features, ).")
             w = self.initial_weights.copy()
         else:
             w = self._rng.randn(n_features)
