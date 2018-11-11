@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 from sklearn.metrics import log_loss
 from .context import grouplasso
-from grouplasso._numba import _group_lasso_penalty, _prox
+from grouplasso._numba import _group_lasso_penalty, _proximal_operator
 from grouplasso.util import sigmoid
 
 
@@ -48,7 +48,7 @@ class BasicTestSuite(unittest.TestCase):
         for _ in range(5):
             diff = 1 / n_samples * x.T @ (proba - y)
             out = w - eta * diff
-            w = _prox(out, thresh, group_ids)
+            w = _proximal_operator(out, thresh, group_ids)
             assert w.shape == out.shape
 
             # confirm that the loss is getting smaller
@@ -66,7 +66,7 @@ class BasicTestSuite(unittest.TestCase):
         w = np.zeros(10).astype(np.float64)
         group_ids = (np.arange(10) // 2).astype(np.int16)
         thresh = 1.0
-        result = _prox(w, thresh, group_ids)
+        result = _proximal_operator(w, thresh, group_ids)
         assert (result == 0).all()
 
 if __name__ == '__main__':

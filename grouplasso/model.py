@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 import pandas as pd
 
 from .util import sigmoid, add_intercept, binary_log_loss, mean_squared_error
-from ._numba import _prox, _group_lasso_penalty
+from ._numba import _proximal_operator, _group_lasso_penalty
 
 
 class GroupLassoRegressor(BaseEstimator, RegressorMixin):
@@ -124,7 +124,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
             diff = 1 / n_samples * X.T @ (pred - y)
             out = w - self.eta * diff
 
-            w[:-1] = _prox(out[:-1], thresh, group_ids)
+            w[:-1] = _proximal_operator(out[:-1], thresh, group_ids)
             w[-1] = out[-1]
 
             if np.linalg.norm(w_old - w, 2) / self.eta < self.tol:
@@ -268,7 +268,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
             diff = 1 / n_samples * X.T @ (proba - y)
             out = w - self.eta * diff
 
-            w[:-1] = _prox(out[:-1], thresh, group_ids)
+            w[:-1] = _proximal_operator(out[:-1], thresh, group_ids)
             w[-1] = out[-1]
 
             if np.linalg.norm(w_old - w, 2) / self.eta < self.tol:
