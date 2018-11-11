@@ -7,7 +7,7 @@ def sigmoid(x):
 
 def add_intercept(X):
     """
-    Xにintercept項を付け加える
+    add intercept to X
     """
     return np.c_[X, np.ones(len(X))]
 
