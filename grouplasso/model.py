@@ -68,12 +68,6 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
                  tol=1e-3, max_iter=1000,
                  initial_weights=None,
                  verbose=True, verbose_interval=1):
-        if not isinstance(group_ids, np.ndarray):
-            raise TypeError("group_ids must be numpy.array.")
-
-        if group_ids.dtype != np.int:
-            raise TypeError("type of group_id must be int.")
-
         self.group_ids = group_ids
         self.random_state = random_state
         self._rng = np.random.RandomState(random_state)
@@ -87,6 +81,15 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         self._losses = []
 
     def fit(self, X, y):
+        if not isinstance(self.group_ids, np.ndarray):
+            raise TypeError("group_ids must be numpy.array.")
+
+        if self.group_ids.dtype != np.int:
+            raise TypeError("type of group_id must be int.")
+
+        if self.alpha <= 0:
+            raise ValueError("alpha must be greater than zero.")
+
         if isinstance(X, pd.DataFrame):
             X = X.values
 
@@ -206,12 +209,6 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
                  tol=1e-3, max_iter=1000,
                  initial_weights=None,
                  verbose=True, verbose_interval=1):
-        if not isinstance(group_ids, np.ndarray):
-            raise TypeError("group_ids must be numpy.array.")
-
-        if group_ids.dtype != np.int:
-            raise TypeError("type of group_id must be int.")
-
         self.group_ids = group_ids
         self.random_state = random_state
         self._rng = np.random.RandomState(random_state)
@@ -225,6 +222,15 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         self._losses = []
 
     def fit(self, X, y):
+        if not isinstance(self.group_ids, np.ndarray):
+            raise TypeError("group_ids must be numpy.array.")
+
+        if self.group_ids.dtype != np.int:
+            raise TypeError("type of group_id must be int.")
+
+        if self.alpha <= 0:
+            raise ValueError("alpha must be greater than zero.")
+
         if isinstance(X, pd.DataFrame):
             X = X.values
 
