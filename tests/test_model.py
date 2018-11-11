@@ -3,6 +3,7 @@
 import unittest
 import warnings
 import time
+import inspect
 import numpy as np
 from sklearn.datasets import load_breast_cancer, load_boston
 from sklearn.preprocessing import StandardScaler
@@ -36,9 +37,15 @@ class BasicTestSuite(unittest.TestCase):
     """Basic test cases."""
 
     def test_basic(self):
-        model = GroupLassoRegressor(
-            np.array([0, 1]), random_state=RANDOM_STATE)
-        model.get_params()
+        for ModelClass in (GroupLassoRegressor, GroupLassoClassifier):
+            # get_params test
+            model = ModelClass(
+                np.array([0, 1]), random_state=RANDOM_STATE)
+            model.get_params()
+
+            # document test (check that the doc has 10 or more lines)
+            doc = inspect.getdoc(ModelClass)
+            assert doc.count("\n") >= 10
 
     def test_regressor(self):
         data = load_boston()
