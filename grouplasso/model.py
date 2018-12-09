@@ -109,7 +109,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
                     "initial_weights must have shape (n_features, ).")
             w = self.initial_weights.copy()
         else:
-            w = self._rng.randn(n_features)
+            w = np.zeros(n_features)
         thresh = self.eta * alpha
         itr = 0
         while itr < self.max_iter:
@@ -253,7 +253,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
                     "initial_weights must have shape (n_features, ).")
             w = self.initial_weights.copy()
         else:
-            w = self._rng.randn(n_features)
+            w = np.zeros(n_features)
         thresh = self.eta * alpha
         itr = 0
         while itr < self.max_iter:

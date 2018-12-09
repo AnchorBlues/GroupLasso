@@ -169,7 +169,7 @@ class BasicTestSuite(unittest.TestCase):
         # initialize weights
         model_weights = np.r_[model.coef_, model.intercept_]
         # add tiny noise to correct weights
-        model_weights += np.random.randn(len(model_weights)) * 0.3
+        model_weights += np.random.randn(len(model_weights)) * 0.01
         model2 = GroupLassoClassifier(group_ids=group_ids,
                                       random_state=RANDOM_STATE)
         model2.set_params(**model.get_params())
