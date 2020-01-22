@@ -9,7 +9,7 @@ from sklearn.datasets import load_breast_cancer, load_boston
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score
-from sklearn.linear_model import Lasso, SGDClassifier
+from sklearn.linear_model import Lasso, SGDClassifier, LogisticRegression
 import pandas as pd
 from .context import grouplasso
 from grouplasso.model import GroupLassoRegressor, GroupLassoClassifier
@@ -190,13 +190,15 @@ class BasicTestSuite(unittest.TestCase):
         alpha = 1e-1
         group_lasso = GroupLassoClassifier(group_ids=group_ids,
                                            random_state=RANDOM_STATE, verbose=False,
-                                           alpha=alpha, tol=1e-3, eta=1e-0,
-                                           max_iter=1000)
+                                           alpha=alpha, tol=1e-4, eta=1e-0,
+                                           max_iter=10000)
         group_lasso.fit(x, y)
         print('itr:', group_lasso.n_iter_)
-        sklearn_lasso = SGDClassifier(loss='log', penalty='l1', alpha=alpha,
-                                      l1_ratio=1.0, max_iter=10, random_state=RANDOM_STATE,
-                                      learning_rate='invscaling', eta0=1.0, verbose=False)
+        # sklearn_lasso = SGDClassifier(loss='log', penalty='l1', alpha=alpha,
+        #                               l1_ratio=1.0, max_iter=10, random_state=RANDOM_STATE,
+        #                               learning_rate='invscaling', eta0=1.0, verbose=False)
+        sklearn_lasso = LogisticRegression(
+            penalty="l1", C=1/(alpha*len(x)), random_state=RANDOM_STATE, solver='saga', max_iter=1000)
         sklearn_lasso.fit(x, y)
         diff_of_coef = np.abs(group_lasso.coef_ - sklearn_lasso.coef_[0])
         diff_of_intercept = abs(
