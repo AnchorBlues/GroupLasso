@@ -253,6 +253,20 @@ class BasicTestSuite(unittest.TestCase):
             with self.assertWarns(UserWarning):
                 model.fit(x, y)
 
+    def test_Xshape_eq_group_ids_error(self):
+        """
+        check raise ValueError if X.shape[1] != len(group_ids)
+        """
+        data = load_breast_cancer()
+        X = StandardScaler().fit_transform(data.data)
+        y = data.target
+        group_ids = np.array([0, 1, 2, 2])
+        assert X.shape[1] != len(group_ids)
+        for ModelClass in (GroupLassoRegressor, GroupLassoClassifier):
+            model = ModelClass(group_ids=group_ids)
+            with self.assertRaises(ValueError):
+                model.fit(X, y)
+
 
 if __name__ == '__main__':
     unittest.main()

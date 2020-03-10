@@ -90,6 +90,9 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         if self.alpha <= 0:
             raise ValueError("alpha must be greater than zero.")
 
+        if len(self.group_ids) != X.shape[1]:
+            raise ValueError("X.shape[1] must be the same as the length of group_ids.")
+
         if isinstance(X, pd.DataFrame):
             X = X.values
 
@@ -230,6 +233,9 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
 
         if self.alpha <= 0:
             raise ValueError("alpha must be greater than zero.")
+
+        if len(self.group_ids) != X.shape[1]:
+            raise ValueError("X.shape[1] must be the same as the length of group_ids.")
 
         if isinstance(X, pd.DataFrame):
             X = X.values
