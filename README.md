@@ -6,6 +6,16 @@ Group Lasso package for Python.
 
 ## Installation Guide
 
+### Using pip
+
+The easiest way to install GroupLasso is using `pip`
+
+```
+pip install GroupLasso
+```
+
+### Building from source
+
 Run the following commands:
 
 ```
