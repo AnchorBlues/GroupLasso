@@ -13,7 +13,7 @@ with open('LICENSE') as f:
 
 setup(
     name='GroupLasso',
-    version='0.1.0',
+    version='0.2.0',
     description='Group Lasso package for Python',
     long_description=readme,
     author='Yu Umegaki',
