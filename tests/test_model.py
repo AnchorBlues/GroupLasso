@@ -9,7 +9,8 @@ from sklearn.datasets import load_breast_cancer, load_boston
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score
-from sklearn.linear_model import Lasso, SGDClassifier, LogisticRegression
+from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.exceptions import NotFittedError
 import pandas as pd
 from .context import grouplasso
 from grouplasso.model import GroupLassoRegressor, GroupLassoClassifier
@@ -112,7 +113,9 @@ class BasicTestSuite(unittest.TestCase):
                                           random_state=RANDOM_STATE, verbose=False,
                                           alpha=alpha, tol=1e-3, eta=1e-1,
                                           max_iter=1000)
-        group_lasso.fit(x, y)
+        ret = group_lasso.fit(x, y)
+        # check that fit method return self
+        assert isinstance(ret, GroupLassoRegressor)
         print('itr:', group_lasso.n_iter_)
         sklearn_lasso = Lasso(random_state=RANDOM_STATE, alpha=alpha)
         sklearn_lasso.fit(x, y)
@@ -192,7 +195,9 @@ class BasicTestSuite(unittest.TestCase):
                                            random_state=RANDOM_STATE, verbose=False,
                                            alpha=alpha, tol=1e-4, eta=1e-0,
                                            max_iter=10000)
-        group_lasso.fit(x, y)
+        ret = group_lasso.fit(x, y)
+        # check that fit method return self
+        assert isinstance(ret, GroupLassoClassifier)
         print('itr:', group_lasso.n_iter_)
         # sklearn_lasso = SGDClassifier(loss='log', penalty='l1', alpha=alpha,
         #                               l1_ratio=1.0, max_iter=10, random_state=RANDOM_STATE,
@@ -237,6 +242,8 @@ class BasicTestSuite(unittest.TestCase):
                 verbose=False
             )
             model.fit(x, y)
+            assert hasattr(model, "best_estimator_")
+            assert hasattr(model.best_estimator_, "coef_")
         warnings.filterwarnings("always")
 
     def test_converge_warning(self):
@@ -268,6 +275,19 @@ class BasicTestSuite(unittest.TestCase):
             model = ModelClass(group_ids=group_ids)
             with self.assertRaises(ValueError):
                 model.fit(X, y)
+
+    def test_raise_NotFittedError(self):
+        """
+        check raise NotFittedError if predicting before fitting
+        """
+        data = load_breast_cancer()
+        X = StandardScaler().fit_transform(data.data)
+        group_ids = np.array([0, 1, 2, 2])
+        assert X.shape[1] != len(group_ids)
+        for ModelClass in (GroupLassoRegressor, GroupLassoClassifier):
+            model = ModelClass(group_ids=group_ids)
+            with self.assertRaises(NotFittedError):
+                model.predict(X)
 
 
 if __name__ == '__main__':

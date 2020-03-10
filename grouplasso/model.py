@@ -1,6 +1,7 @@
 import warnings
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 import pandas as pd
 
 from .util import sigmoid, add_intercept, binary_log_loss, mean_squared_error
@@ -91,7 +92,8 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
             raise ValueError("alpha must be greater than zero.")
 
         if len(self.group_ids) != X.shape[1]:
-            raise ValueError("X.shape[1] must be the same as the length of group_ids.")
+            raise ValueError(
+                "X.shape[1] must be the same as the length of group_ids.")
 
         if isinstance(X, pd.DataFrame):
             X = X.values
@@ -99,6 +101,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         if isinstance(y, pd.Series):
             y = y.values
 
+        X, y = check_X_y(X, y)
         self._losses.clear()
 
         alpha = float(self.alpha)
@@ -143,8 +146,11 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         self.coef_ = w[:-1]
         self.intercept_ = w[-1]
         self.n_iter_ = itr
+        return self
 
     def predict(self, X):
+        check_is_fitted(self, ['coef_', 'intercept_', 'n_iter_'])
+        X = check_array(X)
         return X @ self.coef_ + self.intercept_
 
 
@@ -207,6 +213,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
     The algorithm used to fit the model is proximal gradient method.
 
     """
+
     def __init__(self, group_ids, random_state=None,
                  alpha=1e-3, eta=1e-1,
                  tol=1e-3, max_iter=1000,
@@ -235,7 +242,8 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
             raise ValueError("alpha must be greater than zero.")
 
         if len(self.group_ids) != X.shape[1]:
-            raise ValueError("X.shape[1] must be the same as the length of group_ids.")
+            raise ValueError(
+                "X.shape[1] must be the same as the length of group_ids.")
 
         if isinstance(X, pd.DataFrame):
             X = X.values
@@ -243,6 +251,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         if isinstance(y, pd.Series):
             y = y.values
 
+        X, y = check_X_y(X, y)
         self._losses.clear()
 
         # binary classification
@@ -290,8 +299,11 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         self.coef_ = w[:-1]
         self.intercept_ = w[-1]
         self.n_iter_ = itr
+        return self
 
     def predict_proba(self, X):
+        check_is_fitted(self, ['coef_', 'intercept_', 'n_iter_'])
+        X = check_array(X)
         proba = np.zeros((len(X), 2), dtype=np.float64)
         score = X @ self.coef_ + self.intercept_
         proba[:, 1] = sigmoid(score)
@@ -299,5 +311,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         return proba
 
     def predict(self, X):
+        check_is_fitted(self, ['coef_', 'intercept_', 'n_iter_'])
+        X = check_array(X)
         proba = self.predict_proba(X)
         return (proba[:, 1] > 0.5).astype(int)
