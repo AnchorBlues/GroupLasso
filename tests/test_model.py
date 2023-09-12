@@ -5,7 +5,7 @@ import warnings
 import time
 import inspect
 import numpy as np
-from sklearn.datasets import load_breast_cancer, load_boston
+from sklearn.datasets import load_breast_cancer
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score
@@ -16,6 +16,14 @@ from .context import grouplasso
 from grouplasso.model import GroupLassoRegressor, GroupLassoClassifier
 
 RANDOM_STATE = 42
+
+
+def load_boston():
+    data_url = "http://lib.stat.cmu.edu/datasets/boston"
+    raw_df = pd.read_csv(data_url, sep="\s+", skiprows=22, header=None)
+    x = np.hstack([raw_df.values[::2, :], raw_df.values[1::2, :2]])
+    y = raw_df.values[1::2, 2]
+    return x, y
 
 
 def _scaling_and_add_noise_feature(x_train, x_test, n_noised_features):
@@ -49,9 +57,7 @@ class BasicTestSuite(unittest.TestCase):
             assert doc.count("\n") >= 10
 
     def test_regressor(self):
-        data = load_boston()
-        x = data.data
-        y = data.target
+        x, y = load_boston()
         x_train, x_test, y_train, y_test = train_test_split(
             x, y, random_state=RANDOM_STATE)
 
@@ -104,9 +110,8 @@ class BasicTestSuite(unittest.TestCase):
         compare with lasso of sklearn.
         group lasso become normal lasso if every feature is differenet group with each other.
         """
-        data = load_boston()
-        x = StandardScaler().fit_transform(data.data)
-        y = data.target
+        x, y = load_boston()
+        x = StandardScaler().fit_transform(x)
         group_ids = np.arange(x.shape[1]).astype(int)
         alpha = 1.0
         group_lasso = GroupLassoRegressor(group_ids=group_ids,
