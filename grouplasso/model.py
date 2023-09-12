@@ -85,7 +85,7 @@ class GroupLassoRegressor(BaseEstimator, RegressorMixin):
         if not isinstance(self.group_ids, np.ndarray):
             raise TypeError("group_ids must be numpy.array.")
 
-        if self.group_ids.dtype != np.int:
+        if self.group_ids.dtype != np.int_:
             raise TypeError("type of group_id must be int.")
 
         if self.alpha <= 0:
@@ -235,7 +235,7 @@ class GroupLassoClassifier(BaseEstimator, ClassifierMixin):
         if not isinstance(self.group_ids, np.ndarray):
             raise TypeError("group_ids must be numpy.array.")
 
-        if self.group_ids.dtype != np.int:
+        if self.group_ids.dtype != np.int_:
             raise TypeError("type of group_id must be int.")
 
         if self.alpha <= 0:
